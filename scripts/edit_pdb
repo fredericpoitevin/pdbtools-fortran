@@ -1,0 +1,41 @@
+#!/bin/bash
+#
+if [ $# -ne 5 ]; then
+	echo "... Changing residue name..."
+	echo "ERROR USAGE: $0 <filename> <new filename> <res/atom> <OLD> <NEW>"
+	exit
+fi
+pdbold=$1
+pdbnew=$2
+typ=$3
+old=$4
+new=$5
+#
+echo "about to change $typ "$old" to "$new" in $pdbold, writing it to $pdbnew"
+#
+#
+if [ $typ == "res" ]; then
+  awk -v FS="" -v res="$old" '
+	{
+		for(i=1; i<=NF; i++)
+			printf "%s",
+			((i < 18 || i > 20) ? $i : (($18$19$20!=res) ? $i : "x") );
+		printf "\n"
+	}
+  ' $pdbold > tmp.pdb
+sed 's/xxx/'"$new"'/g' tmp.pdb > $pdbnew ; rm -f tmp.pdb
+elif [ $typ == "atom" ]; then
+  awk -v FS="" -v atom="$old" '
+        {
+                for(i=1; i<=NF; i++)
+                        printf "%s",
+                        ((i < 13 || i > 16) ? $i : (($13$14$15$16!=atom) ? $i : "x") );
+                printf "\n"
+        }
+  ' $pdbold > tmp.pdb
+sed 's/xxxx/'"$new"'/g' tmp.pdb > $pdbnew ; rm -f tmp.pdb
+else
+  echo "ERROR USAGE: argument $typ should be res or atom"
+  exit
+fi
+#

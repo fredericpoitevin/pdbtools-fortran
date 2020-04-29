@@ -1,0 +1,32 @@
+#!/bin/bash
+#
+# We check here whether 2 arguments where given
+if [ $# -ne 2 ]; then
+	echo "Usage error: $0 <input.pdb> <output.pdb>"
+	exit
+fi
+input_pdb=$1
+output_pdb=$2
+#
+if [ ! -f output.pdb ]; then
+  fix_numb $input_pdb numclean.pdb > ${output_pdb}.clean.log
+  echo "To replace all non-standards residues by their standard equivalent, type:"
+  echo "pdbfixer numclean.pdb --replace-nonstandard --add-atoms=heavy"
+else
+  #
+  # Now let's edit residue and atom names, so gromacs can understand
+  #
+  edit_pdb output.pdb   toto1   res  "  U" "URA"
+  edit_pdb toto1        toto2   res  "  C" "CYT"
+  edit_pdb toto2        toto3   res  "  G" "GUA"
+  edit_pdb toto3        toto4   res  "  A" "ADE"
+  edit_pdb toto4        toto5   atom "OP1" "O1P"
+  edit_pdb toto5        toto6   atom "OP2" "O2P"
+  #
+  # get rid of water and ions for now
+  #
+  cat toto6 | awk -v FS="" '{if($22!="Z" && $22!="w") print $0}' > toto7
+  sed 's/HETATM/ATOM  /g' toto7 > $output_pdb
+  #
+  rm -f toto*
+fi

@@ -1,0 +1,5 @@
+c	
+	integer nmodmax,natmax
+c	
+	parameter (nmodmax = 300)
+	parameter (natmax = 5000)
